@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=640, user-scalable=no">
+    <title>代练接单界面</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            min-width: 640px;
+            display: flex;
+            justify-content: center;
+            background-color: #f1f5f9;
+        }
+        .container-fixed-center {
+            width: 640px;
+            background-color: white;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            min-height: 100vh;
+        }
+        header {
+            background-color: #4a90e2;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        .nav, .filters {
+            display: flex;
+            justify-content: space-around;
+            padding: 15px;
+            border-bottom: 1px solid #e0e0e0;
+            background-color: #ffffff;
+        }
+        .nav button {
+            background: none;
+            border: none;
+            color: #4a90e2;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .filters select {
+            padding: 8px;
+            font-size: 14px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .order-list {
+            padding: 10px;
+        }
+        .order {
+            background: white;
+            margin-bottom: 15px;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .order h3 {
+            font-size: 16px;
+            margin: 0;
+            color: #333;
+        }
+        .order p {
+            margin: 5px 0;
+            font-size: 14px;
+            color: #666;
+        }
+        .price {
+            color: #e74c3c;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        footer {
+            display: flex;
+            justify-content: space-around;
+            padding: 15px 0;
+            width: 100%;
+            background-color: #ffffff;
+            box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
+            color: #4a90e2;
+        }
+        footer div {
+            text-align: center;
+            font-size: 14px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fixed-center">
+        <header>代练接单</header>
+        
+        <div class="nav">
+            <button onclick="showCategory('quality')">优质</button>
+            <button onclick="showCategory('standard')">标准</button>
+            <button onclick="showCategory('rush')">抢单</button>
+            <button onclick="showCategory('training')">陪练</button>
+            <button onclick="showCategory('reward')">悬赏</button>
+        </div>
+        
+        <div class="filters">
+            <select>
+                <option value="智能排序">智能排序</option>
+                <option value="最新发布">最新发布</option>
+                <option value="价格最高">价格最高</option>
+            </select>
+            <select>
+                <option value="无契约">无契约</option>
+                <option value="有契约">有契约</option>
+            </select>
+        </div>
+        
+        <div class="order-list" id="orders">
+            <!-- 示例订单内容会动态加载 -->
+        </div>
+        
+        <footer>
+            <div>发布</div>
+            <div>接单</div>
+            <div>订单</div>
+            <div>消息</div>
+            <div>我的</div>
+        </footer>
+    </div>
+
+    <script>
+        // 订单显示函数
+        function showCategory(category) {
+            const orders = document.getElementById('orders');
+            orders.innerHTML = ''; // 清空当前订单列表
+            
+            if (category === 'quality') {
+                orders.innerHTML += createOrderHTML('优质单', '王者荣耀上分-超凡1', '48小时', '￥200.00', '￥320.00');
+                orders.innerHTML += createOrderHTML('优质单', '荣耀王者 冲击省标', '72小时', '￥300.00', '￥450.00');
+                orders.innerHTML += createOrderHTML('优质单', '峡谷之巅 最高荣耀分段', '96小时', '￥500.00', '￥650.00');
+                orders.innerHTML += createOrderHTML('优质单', '巅峰赛-战力冲刺', '48小时', '￥150.00', '￥200.00');
+                orders.innerHTML += createOrderHTML('优质单', '钻石到星耀段位冲刺', '60小时', '￥250.00', '￥300.00');
+                orders.innerHTML += createOrderHTML('优质单', '王者荣耀五排上分', '40小时', '￥180.00', '￥280.00');
+                orders.innerHTML += createOrderHTML('优质单', '荣耀五杀挑战', '72小时', '￥300.00', '￥400.00');
+            } else if (category === 'standard') {
+                orders.innerHTML += createOrderHTML('标准单', '钻石-超凡1', '24小时', '￥100.00', '￥180.00');
+                orders.innerHTML += createOrderHTML('标准单', '超凡1-超凡2', '36小时', '￥150.00', '￥230.00');
+                orders.innerHTML += createOrderHTML('标准单', '黄金到铂金', '12小时', '￥80.00', '￥100.00');
+                orders.innerHTML += createOrderHTML('标准单', '星耀到王者', '48小时', '￥200.00', '￥250.00');
+                orders.innerHTML += createOrderHTML('标准单', '峡谷之巅荣耀', '24小时', '￥150.00', '￥180.00');
+                orders.innerHTML += createOrderHTML('标准单', '王者荣耀挑战赛', '60小时', '￥180.00', '￥240.00');
+            } else if (category === 'rush') {
+                orders.innerHTML += createOrderHTML('抢单', '王者荣耀省标冲刺', '72小时', '￥300.00', '￥380.00');
+                orders.innerHTML += createOrderHTML('抢单', '巅峰赛1600分以上', '96小时', '￥400.00', '￥450.00');
+                orders.innerHTML += createOrderHTML('抢单', '峡谷之巅上分', '24小时', '￥250.00', '￥300.00');
+                orders.innerHTML += createOrderHTML('抢单', '王者战力上分', '12小时', '￥150.00', '￥180.00');
+                orders.innerHTML += createOrderHTML('抢单', '荣耀王者五排冲刺', '30小时', '￥250.00', '￥320.00');
+            } else if (category === 'training') {
+                orders.innerHTML += createOrderHTML('陪练单', '王者荣耀单排上分', '12小时', '￥120.00', '￥160.00');
+                orders.innerHTML += createOrderHTML('陪练单', '荣耀王者陪练', '24小时', '￥200.00', '￥250.00');
+                orders.innerHTML += createOrderHTML('陪练单', '巅峰赛陪练', '10小时', '￥100.00', '￥120.00');
+                orders.innerHTML += createOrderHTML('陪练单', '钻石排位陪练', '15小时', '￥80.00', '￥100.00');
+                orders.innerHTML += createOrderHTML('陪练单', '王者荣耀五排陪练', '20小时', '￥150.00', '￥200.00');
+            } else if (category === 'reward') {
+                orders.innerHTML += createOrderHTML('悬赏单', '王者荣耀挑战赛', '48小时', '￥200.00', '￥300.00');
+                orders.innerHTML += createOrderHTML('悬赏单', '巅峰赛突破1800分', '72小时', '￥350.00', '￥420.00');
+                orders.innerHTML += createOrderHTML('悬赏单', '荣耀省级标志挑战', '96小时', '￥500.00', '￥600.00');
+                orders.innerHTML += createOrderHTML('悬赏单', '战力提升至2000', '30小时', '￥150.00', '￥200.00');
+            }
+        }
+    
+        // 创建订单HTML函数
+        function createOrderHTML(type, title, time, deposit, price) {
+            return `
+            <div class="order">
+                <div>
+                    <h3>【${type}】${title}</h3>
+                    <p>总时间: ${time} | 保证金: ${deposit}</p>
+                    <p>发布者: 系统</p>
+                </div>
+                <div class="price">${price}</div>
+            </div>`;
+        }
+    
+        // 页面加载完成后显示“优质”类别订单
+        document.addEventListener('DOMContentLoaded', function() {
+            showCategory('quality');
+        });
+    </script>
+    
