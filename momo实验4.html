@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=640, user-scalable=no">
+    <title>代练接单界面</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            min-width: 640px;
+            display: flex;
+            justify-content: center;
+            background-color: #f1f5f9;
+        }
+        .container-fixed-center {
+            width: 640px;
+            background-color: white;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            min-height: 100vh;
+        }
+        header {
+            background-color: #4a90e2;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        .nav, .filters {
+            display: flex;
+            justify-content: space-around;
+            padding: 15px;
+            border-bottom: 1px solid #e0e0e0;
+            background-color: #ffffff;
+        }
+        .nav button {
+            background: none;
+            border: none;
+            color: #4a90e2;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .filters select, .filters input[type="range"] {
+            padding: 8px;
+            font-size: 14px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            width: 100px;
+        }
+        .order-list {
+            padding: 10px;
+        }
+        .order {
+            background: white;
+            margin-bottom: 15px;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+        }
+        .order h3 {
+            font-size: 16px;
+            margin: 0;
+            color: #333;
+        }
+        .order p {
+            margin: 5px 0;
+            font-size: 14px;
+            color: #666;
+        }
+        .price {
+            color: #e74c3c;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        footer {
+            display: flex;
+            justify-content: space-around;
+            padding: 15px 0;
+            width: 100%;
+            background-color: #ffffff;
+            box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
+            color: #4a90e2;
+        }
+        footer div {
+            text-align: center;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            display: none;
+        }
+        .modal-content {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            width: 80%;
+            max-width: 500px;
+            text-align: center;
+        }
+        .modal-close {
+            background-color: #4a90e2;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fixed-center">
+        <header>代练接单</header>
+        
+        <div class="nav">
+            <button onclick="showCategory('优质单')">优质</button>
+            <button onclick="showCategory('标准单')">标准</button>
+            <button onclick="showCategory('抢单')">抢单</button>
+            <button onclick="showCategory('陪练单')">陪练</button>
+            <button onclick="showCategory('悬赏单')">悬赏</button>
+        </div>
+        
+        <div class="filters">
+            <select id="sort" onchange="applySort()">
+                <option value="智能排序">智能排序</option>
+                <option value="最新发布">最新发布</option>
+                <option value="价格最高">价格最高</option>
+            </select>
+            <input type="range" id="priceRange" min="100" max="1000" step="50" onchange="filterByPrice()">
+            <span id="priceValue">价格范围: ￥100-￥1000</span>
+        </div>
+        
+        <div class="order-list" id="orders">
+            <!-- 动态加载订单 -->
+        </div>
+        
+        <footer>
+            <div>发布</div>
+            <div>接单</div>
+            <div>订单</div>
+            <div>消息</div>
+            <div>我的</div>
+        </footer>
+    </div>
+
+    <!-- 弹窗 -->
+    <div class="modal" id="modal">
+        <div class="modal-content">
+            <h3 id="modalTitle">订单详情</h3>
+            <p id="modalDetails">订单详细信息显示在这里。</p>
+            <button class="modal-close" onclick="closeModal()">关闭</button>
+        </div>
+    </div>
+
+    <script>
+        let ordersData = [];
+        let filteredOrders = [];
+
+        function createOrderHTML(type, title, time, deposit, price) {
+            return {
+                type,
+                title,
+                time,
+                deposit,
+                price: parseFloat(price.replace('￥', '')), // 提取数值便于排序
+                html: `
+                <div class="order" onclick="showDetails('${type}', '${title}', '${time}', '${deposit}', '￥${price}')">
+                    <div>
+                        <h3>【${type}】${title}</h3>
+                        <p>总时间: ${time} | 保证金: ${deposit}</p>
+                        <p>发布者: 系统</p>
+                    </div>
+                    <div class="price">￥${price}</div>
+                </div>`,
+            };
+        }
+
+        function initOrders() {
+            for (let i = 1; i <= 10; i++) {
+                ordersData.push(createOrderHTML('优质单', `优质单标题 ${i}`, '48小时', `￥${i * 50}`, `￥${i * 100}`));
+                ordersData.push(createOrderHTML('标准单', `标准单标题 ${i}`, '24小时', `￥${i * 30}`, `￥${i * 80}`));
+                ordersData.push(createOrderHTML('抢单', `抢单标题 ${i}`, '36小时', `￥${i * 40}`, `￥${i * 90}`));
+                ordersData.push(createOrderHTML('陪练单', `陪练单标题 ${i}`, '12小时', `￥${i * 20}`, `￥${i * 70}`));
+                ordersData.push(createOrderHTML('悬赏单', `悬赏单标题 ${i}`, '72小时', `￥${i * 60}`, `￥${i * 120}`));
+            }
+        }
+
+        function updateOrders(orders) {
+            const ordersContainer = document.getElementById('orders');
+            ordersContainer.innerHTML = orders.map(order => order.html).join('');
+        }
+
+        function showCategory(category) {
+            filteredOrders = ordersData.filter(order => order.type === category);
+            updateOrders(filteredOrders);
+        }
+
+        function applySort() {
+            const sortType = document.getElementById('sort').value;
+            if (sortType === '最新发布') {
+                filteredOrders.reverse();
+            } else if (sortType === '价格最高') {
+                filteredOrders.sort((a, b) => b.price - a.price);
+            }
+            updateOrders(filteredOrders);
+        }
+
+        function filterByPrice() {
+            const priceRange = document.getElementById('priceRange').value;
+            document.getElementById('priceValue').innerText = `价格范围: ￥100-￥${priceRange}`;
+            const maxPrice = parseFloat(priceRange);
+            const filtered = filteredOrders.filter(order => order.price <= maxPrice);
+            updateOrders(filtered);
+        }
+
+        function showDetails(type, title, time, deposit, price) {
+            document.getElementById('modalTitle').innerText = `${type} - ${title}`;
+            document.getElementById('modalDetails').innerHTML = `总时间: ${time}<br>保证金: ${deposit}<br>价格: ${price}`;
+            document.getElementById('modal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('modal').style.display = 'none';
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initOrders();
+            showCategory('优质单'); // 默认显示优质单
+        });
+    </script>
+</body>
+</html>
