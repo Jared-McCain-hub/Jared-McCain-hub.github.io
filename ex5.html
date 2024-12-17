@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=640, user-scalable=no">
+    <title>代练接单界面</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            min-width: 640px;
+            display: flex;
+            justify-content: center;
+            background-color: #f1f5f9;
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .container-fixed-center {
+            width: 640px;
+            background-color: white;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            min-height: 100vh;
+        }
+        header {
+            background-color: #4a90e2;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        .nav, .filters {
+            display: flex;
+            justify-content: space-around;
+            padding: 15px;
+            border-bottom: 1px solid #e0e0e0;
+            background-color: #ffffff;
+        }
+        .nav button {
+            background: none;
+            border: none;
+            color: #4a90e2;
+            font-size: 16px;
+            cursor: pointer;
+            transition: color 0.3s, transform 0.3s;
+        }
+        .nav button:hover {
+            color: #357ab7;
+            transform: scale(1.1);
+        }
+        .filters select, .filters input[type="range"] {
+            padding: 8px;
+            font-size: 14px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .order-list {
+            padding: 10px;
+        }
+        .order {
+            background: white;
+            margin-bottom: 15px;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .order:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+        .price {
+            color: #e74c3c;
+            font-size: 18px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fixed-center">
+        <header>代练接单</header>
+
+        <div class="nav">
+            <button onclick="showCategory('优质单')">优质</button>
+            <button onclick="showCategory('标准单')">标准</button>
+            <button onclick="showCategory('抢单')">抢单</button>
+            <button onclick="showCategory('陪练单')">陪练</button>
+            <button onclick="showCategory('悬赏单')">悬赏</button>
+        </div>
+
+        <div class="filters">
+            <select id="sort" onchange="applySort()">
+                <option value="智能排序">智能排序</option>
+                <option value="最新发布">最新发布</option>
+                <option value="价格最高">价格最高</option>
+            </select>
+            <input type="range" id="priceRange" min="100" max="1000" step="50" value="1000" onchange="filterByPrice()">
+            <span id="priceValue">价格范围: ￥100-￥1000</span>
+        </div>
+
+        <div class="order-list" id="orders">
+            <!-- 初始示例数据 -->
+            <div class="order">
+                <div>
+                    <h3>【优质单】优质单标题 1</h3>
+                    <p>总时间: 48小时 | 保证金: ￥50</p>
+                    <p>发布者: 系统</p>
+                </div>
+                <div class="price">￥100</div>
+            </div>
+            <div class="order">
+                <div>
+                    <h3>【标准单】标准单标题 1</h3>
+                    <p>总时间: 24小时 | 保证金: ￥30</p>
+                    <p>发布者: 系统</p>
+                </div>
+                <div class="price">￥80</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let ordersData = [];
+        let filteredOrders = [];
+
+        function createOrderHTML(type, title, time, deposit, price) {
+            return {
+                type,
+                title,
+                time,
+                deposit,
+                price: parseFloat(price.replace('￥', '')),
+                html: `
+                <div class="order">
+                    <div>
+                        <h3>【${type}】${title}</h3>
+                        <p>总时间: ${time} | 保证金: ${deposit}</p>
+                        <p>发布者: 系统</p>
+                    </div>
+                    <div class="price">￥${price}</div>
+                </div>`
+            };
+        }
+
+        function initOrders() {
+            for (let i = 2; i <= 10; i++) {
+                ordersData.push(createOrderHTML('优质单', `优质单标题 ${i}`, '48小时', `￥${i * 50}`, `￥${i * 100}`));
+                ordersData.push(createOrderHTML('标准单', `标准单标题 ${i}`, '24小时', `￥${i * 30}`, `￥${i * 80}`));
+                ordersData.push(createOrderHTML('抢单', `抢单标题 ${i}`, '36小时', `￥${i * 40}`, `￥${i * 90}`));
+                ordersData.push(createOrderHTML('陪练单', `陪练单标题 ${i}`, '12小时', `￥${i * 20}`, `￥${i * 70}`));
+                ordersData.push(createOrderHTML('悬赏单', `悬赏单标题 ${i}`, '72小时', `￥${i * 60}`, `￥${i * 120}`));
+            }
+            filteredOrders = ordersData;
+            updateOrders();
+        }
+
+        function updateOrders() {
+            const ordersContainer = document.getElementById('orders');
+            ordersContainer.innerHTML = '';
+            filteredOrders.forEach(order => {
+                ordersContainer.innerHTML += order.html;
+            });
+        }
+
+        function showCategory(category) {
+            filteredOrders = ordersData.filter(order => order.type === category);
+            updateOrders();
+        }
+
+        function applySort() {
+            const sortType = document.getElementById('sort').value;
+            if (sortType === '最新发布') {
+                filteredOrders.reverse();
+            } else if (sortType === '价格最高') {
+                filteredOrders.sort((a, b) => b.price - a.price);
+            }
+            updateOrders();
+        }
+
+        function filterByPrice() {
+            const maxPrice = parseInt(document.getElementById('priceRange').value);
+            document.getElementById('priceValue').innerText = `价格范围: ￥100-￥${maxPrice}`;
+            filteredOrders = ordersData.filter(order => order.price <= maxPrice);
+            updateOrders();
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initOrders();
+        });
+    </script>
+</body>
+</html>
